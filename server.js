@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 });
 
 // I.N.D.U.C.E.S
-// =============
+// ============
 // Index
 
 app.get("/", (req, res) => {
@@ -25,8 +25,8 @@ app.get("/pokemon", (req, res) => {
 });
 
 app.get("/pokemon/:id", (req, res) => {
-    res.send(req.params.id);
-})
+  res.send(req.params.id);
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`);
