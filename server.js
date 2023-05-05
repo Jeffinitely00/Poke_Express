@@ -2,74 +2,71 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const { connect, connection } = require("mongoose");
 const Pokemon = require("./models/pokemon");
 
-const { connect, connection } = require("mongoose");
-
+// Database connection
 connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
 connection.once("open", () => {
-  console.log("connected to mongo");
+  console.log("Connected to Mongo");
 });
 
+// View Engine Middleware Configure
 const reactViewsEngine = require("jsx-view-engine").createEngine();
 app.engine("jsx", reactViewsEngine);
-
 app.set("view engine", "jsx");
+app.set("views", "./views");
 
-app.set("views", "/views");
-
+// Custom Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
-  console.log("middleware running");
+  console.log("Middlware is running...");
   next();
 });
 
-//Home
+// I.N.D.U.C.E.S
+
 app.get("/", (req, res) => {
   res.send("Welcome to the Pokemon App!");
 });
 
-//Index added mongodb
-app.get("/pokemon/", async (req, res) => {
+// Index
+app.get("/pokemon", async (req, res) => {
   try {
     const foundPokemon = await Pokemon.find({});
-    res.status(200).render("Index", { pokemons: foundPokemon });
+    res.status(200).render("Index", { pokemon: foundPokemon });
   } catch (err) {
     res.status(400).send(err);
   }
 });
 
-//New
+// New
 app.get("/pokemon/new", (req, res) => {
-  //console.log(pokemon);
   res.render("New");
 });
 
-//Create
-app.post("/pokemon/", async (req, res) => {
+// Create
+app.post("/pokemon", async (req, res) => {
   try {
-    const newPokemon = await Pokemon.create({
-      ...req.body,
-      img: `http://img.pokemondb.net/artwork/${req.body.name
-        .toLowerCase()
-        .trim()}`,
-    });
-    console.log(newPokemon);
-    res.redirect("/pokemon");
+    const newPokemon = await Pokemon.create(req.body);
+    req.body.img = `http://img.pokemondb.net/artwork/${req.body.name}`;
+    // pokemon.push(req.body);
+
+    res.redirect("pokemon");
   } catch (err) {
     res.status(400).send(err);
   }
 });
 
-//Show
+// Show
 app.get("/pokemon/:id", async (req, res) => {
-  const foundPokemon = await Pokemon.findById(req.params.id);
   try {
+    const foundPokemon = await Pokemon.findById(req.params.id);
     res.render("Show", {
+      // pokemon: pokemon[req.params.id],
       pokemon: foundPokemon,
     });
   } catch (err) {
@@ -77,6 +74,7 @@ app.get("/pokemon/:id", async (req, res) => {
   }
 });
 
+// Listen
 app.listen(PORT, () => {
-  console.log(`Listen on port :${PORT} `);
+  console.log(`Listening on port: ${PORT}`);
 });
